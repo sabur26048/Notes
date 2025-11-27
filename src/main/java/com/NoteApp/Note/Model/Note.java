@@ -1,4 +1,4 @@
-package com.NoteApp.Note.NoteModel;
+package com.NoteApp.Note.Model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,6 +18,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "notes")
 public class Note {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "note_id")
@@ -28,8 +29,12 @@ public class Note {
     private String noteDesc;
     @Column(name = "note_date")
     private LocalDate noteDate;
-
     @Column(name = "note_time")
     private String noteTime;
+    @PrePersist
+    public void setTimestamps() {
+        this.noteDate = LocalDate.now();
+        this.noteTime = LocalTime.now().toString();
+    }
 
 }

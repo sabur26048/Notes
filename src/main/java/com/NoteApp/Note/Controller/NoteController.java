@@ -1,21 +1,23 @@
-package com.NoteApp.Note.NoteController;
+package com.NoteApp.Note.Controller;
 
-import com.NoteApp.Note.NoteModel.Note;
-import com.NoteApp.Note.NoteService.NoteService;
+import com.NoteApp.Note.DTO.NoteRequest;
+import com.NoteApp.Note.DTO.NoteResponse;
+import com.NoteApp.Note.Model.Note;
+import com.NoteApp.Note.Service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/api")
 public class NoteController {
 
     @Autowired
@@ -26,10 +28,8 @@ public class NoteController {
         return  "redirect:/notes";
     }
     @GetMapping("/notes")
-    public String getAllNotes(Model model){
-        List<Note> noteList = service.findAll();
-        model.addAttribute("Notes" , noteList);
-        return  "index";
+    public List<Note> getAllNotes(){
+        return service.findAll();
     }
 
     @GetMapping("/notes/new")
@@ -37,19 +37,25 @@ public class NoteController {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH.mm");
         LocalTime time1 = LocalTime.now().minusHours(12);
         String noteTime = time1.format(dateTimeFormatter);
-        model.addAttribute("noteObj" , new Note(0,null,null, LocalDate.now(),noteTime));
+       // model.addAttribute("noteObj" , new Note(0,null,null, LocalDate.now(),noteTime));
         return "note_form";
     }
 
-    @PostMapping("/save")
-    public String saveNoteObj(Note note, RedirectAttributes redirectAttributes){
-        service.newNote(note);
-        redirectAttributes.addFlashAttribute("message","Saved");
-        return "redirect:/notes";
+    @PostMapping("/notes")
+    public ResponseEntity<?> saveNoteObj(@RequestBody NoteRequest note) {
+        NoteResponse saveNote = service.newNote(note);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "status", "SUCCESS",
+                        "message", "Note saved successfully",
+                        "data", saveNote
+                ));
     }
 
+
     @PostMapping("/update")
-    public String updateNoteObj(Note note, RedirectAttributes redirectAttributes){
+    public String updateNoteObj(NoteRequest note, RedirectAttributes redirectAttributes){
         service.newNote(note);
         redirectAttributes.addFlashAttribute("message","Updated");
         return "redirect:/notes";
